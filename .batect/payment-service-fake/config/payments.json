@@ -1,0 +1,64 @@
+[
+  {
+    "httpRequest": {
+      "path": "/payments",
+      "method": "POST",
+      "body": {
+        "paymentIdentifier": "REN_NI_XIN_SERVICE_CHARGE_100001",
+        "amount": 10000.00,
+        "currency": "CNY",
+        "fromBankAccount": "4003830171874018",
+        "toBankAccount": "5496198584584769"
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "paymentId": "c26faa45-1a66-4f45-a42c-a31a2648baf7",
+        "paymentStatus": "PAYMENT_SUCCESS"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/payments",
+      "method": "POST",
+      "body": {
+        "paymentIdentifier": "REN_NI_XIN_SERVICE_CHARGE_100002",
+        "amount": 10001.00,
+        "currency": "CNY",
+        "fromBankAccount": "4003830171874018",
+        "toBankAccount": "5496198584584769"
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "paymentId": "c26faa45-1a66-4f45-a42c-a31a2648baf8",
+        "paymentStatus": "PAYMENT_FAILED",
+        "message": "Account doesn't have enough money to pay for the payment."
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/payments",
+      "method": "POST",
+      "body": {
+        "paymentIdentifier": "REN_NI_XIN_SERVICE_CHARGE_100003",
+        "amount": 10000.00,
+        "currency": "CNY",
+        "fromBankAccount": "4003830171874018",
+        "toBankAccount": "5496198584584769"
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "paymentId": "c26faa45-1a66-4f45-a42c-a31a2648baf9",
+        "paymentStatus": "PAYMENT_SUCCESS"
+      },
+      "delay": {
+        "timeUnit": "SECONDS",
+        "value": 30
+      }
+    }
+  }
+]

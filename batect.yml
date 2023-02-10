@@ -1,0 +1,118 @@
+project_name: demo
+containers:
+  java-build-env:
+    image: adoptopenjdk:14.0.2_8-jdk-hotspot
+    volumes:
+      - local: .
+        container: /code
+        options: cached
+      - type: cache
+        name: gradle-cache
+        container: /home/container-user/.gradle
+    working_directory: /code
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+      AWS_ACCESS_KEY_ID: x
+      AWS_SECRET_ACCESS_KEY: x
+    run_as_current_user:
+      enabled: true
+      home_directory: /home/container-user
+
+  database:
+    build_directory: .batect/database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: demo
+
+  localstack:
+    build_directory: .batect/localstack
+    volumes:
+      - local: .batect/localstack/bootstrap
+        container: /docker-entrypoint-initaws.d/
+      - local: /tmp/localstack
+        container: /tmp/localstack
+      - local: /var/run/docker.sock
+        container: /var/run/docker.sock
+    environment:
+      AWS_DEFAULT_REGION: ap-southeast-1
+      EDGE_PORT: 4566
+      SERVICES: sqs
+    ports:
+      - 4566:4566
+
+  payment-service:
+    build_directory: .batect/payment-service-fake
+    volumes:
+      - local: .batect/payment-service-fake/config
+        container: /config
+    ports:
+      - 1080:1080
+    environment:
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/payments.json
+      MOCKSERVER_LIVENESS_HTTP_GET_PATH: /health
+
+tasks:
+  build:
+    description: Build the application.
+    group: Build tasks
+    run:
+      container: java-build-env
+      command: ./gradlew shadowJar
+
+  unitTest:
+    description: Run the unit tests.
+    group: Test tasks
+    run:
+      container: java-build-env
+      command: ./gradlew test
+
+  continuousUnitTest:
+    description: Run the unit tests and then re-run them when any code changes are detected.
+    group: Test tasks
+    run:
+      container: java-build-env
+      command: ./gradlew --continuous
+
+  componentTest:
+    description: Run the component tests.
+    group: Test tasks
+    dependencies:
+      - database
+      - localstack
+      - payment-service
+    run:
+      container: java-build-env
+      command: ./gradlew componentTest
+
+  prepush:
+    prerequisites:
+      - unitTest
+      - componentTest
+
+  start:
+    dependencies:
+      - database
+      - localstack
+      - payment-service
+    run:
+      ports:
+        - 8080:8080
+      container: java-build-env
+      command: ./gradlew bootRun
+
+  startInvoiceService:
+    run:
+      container: payment-service
+
+  bash:
+    dependencies:
+      - database
+      - localstack
+      - payment-service
+    run:
+      ports:
+        - 8080:8080
+      container: java-build-env
+      command: bash

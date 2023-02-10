@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://database:5432/demo
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL82Dialect
+
+cloud:
+  aws:
+    region:
+      static: ap-southeast-1
+    sqs:
+      endpoint: http://localstack:4566
+
+sqs:
+  name:
+    settlementInvoice: settlement-invoice-sqs
+
+platform:
+  bankAccount: 5496198584584769
+  identifierPrefix:
+    serviceCharge: REN_NI_XIN_SERVICE_CHARGE
+    settlementInvoice: REN_NI_XIN_SETTLEMENT_INVOICE
+
+app:
+  paymentServiceUrl: http://payment-service:1080
